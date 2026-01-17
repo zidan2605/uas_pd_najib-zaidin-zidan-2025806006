@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Event - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event System</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Menu rendered by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole">Loading...</div>
+                    </div>
+                </div>
+
+                <button class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                <button class="btn btn-danger" style="width: 100%;" onclick="utils.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1 class="page-title" id="pageTitle">
+                        <i class="fas fa-plus-circle"></i>
+                        Tambah Event
+                    </h1>
+                </div>
+
+                <!-- Form -->
+                <div class="card">
+                    <div class="card-body">
+                        <form id="eventForm">
+                            <div class="form-group">
+                                <label for="title" class="form-label required">Judul Event</label>
+                                <input type="text" id="title" name="title" class="form-control"
+                                    placeholder="Masukkan judul event">
+                                <span id="title-error" class="form-error"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description" class="form-label required">Deskripsi</label>
+                                <textarea id="description" name="description" class="form-control"
+                                    placeholder="Deskripsi lengkap tentang event" rows="5"></textarea>
+                                <span id="description-error" class="form-error"></span>
+                            </div>
+
+                            <div class="d-flex gap-2" style="flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 200px;">
+                                    <label for="event_date" class="form-label required">Tanggal Event</label>
+                                    <input type="date" id="event_date" name="event_date" class="form-control">
+                                    <span id="event_date-error" class="form-error"></span>
+                                </div>
+
+                                <div class="form-group" style="flex: 1; min-width: 200px;">
+                                    <label for="event_time" class="form-label required">Waktu Event</label>
+                                    <input type="time" id="event_time" name="event_time" class="form-control">
+                                    <span id="event_time-error" class="form-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location" class="form-label required">Lokasi</label>
+                                <input type="text" id="location" name="location" class="form-control"
+                                    placeholder="Lokasi event">
+                                <span id="location-error" class="form-error"></span>
+                            </div>
+
+                            <div class="d-flex gap-2" style="flex-wrap: wrap;">
+                                <div class="form-group" style="flex: 1; min-width: 200px;">
+                                    <label for="quota" class="form-label required">Kuota Peserta</label>
+                                    <input type="number" id="quota" name="quota" class="form-control"
+                                        placeholder="Jumlah kuota" min="1">
+                                    <span id="quota-error" class="form-error"></span>
+                                </div>
+
+                                <div class="form-group" style="flex: 1; min-width: 200px;">
+                                    <label for="fee" class="form-label required">Biaya Pendaftaran (Rp)</label>
+                                    <input type="number" id="fee" name="fee" class="form-control" placeholder="0"
+                                        min="0" step="1000">
+                                    <span id="fee-error" class="form-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="status" class="form-label required">Status</label>
+                                <select id="status" name="status" class="form-control">
+                                    <option value="open">Open</option>
+                                    <option value="closed">Closed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="submit" id="submitBtn" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    <span>Simpan Event</span>
+                                </button>
+                                <button type="button" id="cancelBtn" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                    <span>Batal</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/form.js"></script>
+</body>
+
+</html>

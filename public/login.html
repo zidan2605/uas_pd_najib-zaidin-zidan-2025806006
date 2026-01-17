@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login - Sistem Pendaftaran Event">
+    <title>Login - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Auth page styles */
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-header {
+            background-color: var(--bg-card);
+            padding: var(--spacing-md) var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .auth-header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            text-decoration: none;
+        }
+
+        .auth-logo i {
+            color: var(--primary-color);
+            font-size: var(--font-size-xl);
+        }
+
+        .auth-nav {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            background-color: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background-color: var(--primary-color);
+            opacity: 0.05;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .auth-container::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background-color: var(--success-color);
+            opacity: 0.05;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .auth-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .auth-card-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .auth-icon {
+            width: 64px;
+            height: 64px;
+            background-color: var(--primary-color);
+            color: var(--text-inverse);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-lg);
+            font-size: var(--font-size-2xl);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .auth-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .auth-footer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            font-size: var(--font-size-sm);
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .demo-box {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .demo-box-title {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .demo-credentials {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: var(--spacing-xs) var(--spacing-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .demo-credentials dt {
+            color: var(--text-secondary);
+        }
+
+        .demo-credentials dd {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .form-control.has-toggle {
+            padding-right: 44px;
+        }
+
+        @media (max-width: 480px) {
+            .auth-header-content {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .auth-container {
+                padding: var(--spacing-md);
+            }
+
+            .auth-card {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-page">
+        <!-- Header -->
+        <header class="auth-header">
+            <div class="auth-header-content">
+                <a href="public.html" class="auth-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event Registration</span>
+                </a>
+                <nav class="auth-nav">
+                    <button class="btn btn-secondary btn-sm" id="darkModeToggle" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <a href="public.html" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-list"></i>
+                        <span>Daftar Event</span>
+                    </a>
+                    <a href="register.html" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Daftar</span>
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="auth-container">
+            <div class="auth-card card">
+                <div class="auth-card-header">
+                    <div class="auth-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h1 class="auth-title">Masuk</h1>
+                    <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username" class="form-label required">Username</label>
+                        <input type="text" id="username" name="username" class="form-control"
+                            placeholder="Masukkan username" autocomplete="username" autofocus>
+                        <span id="username-error" class="error-message"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label required">Password</label>
+                        <div class="password-toggle">
+                            <input type="password" id="password" name="password" class="form-control has-toggle"
+                                placeholder="Masukkan password" autocomplete="current-password">
+                            <button type="button" class="password-toggle-btn" onclick="togglePassword()">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <span id="password-error" class="error-message"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg"
+                        style="width: 100%; margin-top: var(--spacing-md);">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Masuk</span>
+                    </button>
+                </form>
+
+                <div class="demo-box">
+                    <div class="demo-box-title">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Akun</span>
+                    </div>
+                    <dl class="demo-credentials">
+                        <dt>Username:</dt>
+                        <dd>admin</dd>
+                        <dt>Password:</dt>
+                        <dd>password</dd>
+                    </dl>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Belum punya akun? <a href="register.html">Daftar sekarang</a></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = '../backend/php';
+
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const icon = document.querySelector('#darkModeToggle i');
+            if (icon) {
+                icon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // Load theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+        // Password toggle
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Show error
+        function showError(fieldId, message) {
+            const errorSpan = document.getElementById(`${fieldId}-error`);
+            const input = document.getElementById(fieldId);
+            if (errorSpan) {
+                errorSpan.textContent = message;
+                errorSpan.style.display = 'block';
+            }
+            if (input) input.classList.add('error');
+        }
+
+        // Clear error
+        function clearError(fieldId) {
+            const errorSpan = document.getElementById(`${fieldId}-error`);
+            const input = document.getElementById(fieldId);
+            if (errorSpan) {
+                errorSpan.textContent = '';
+                errorSpan.style.display = 'none';
+            }
+            if (input) input.classList.remove('error');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type}`;
+            notification.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px; animation: slideIn 0.3s ease-out;';
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Check if already logged in
+        (async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth.php?action=check`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = 'index.html';
+                }
+            } catch (e) { }
+        })();
+
+        // Handle form submit
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            clearError('username');
+            clearError('password');
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            let valid = true;
+            if (!username) {
+                showError('username', 'Username wajib diisi');
+                valid = false;
+            }
+            if (!password) {
+                showError('password', 'Password wajib diisi');
+                valid = false;
+            }
+            if (!valid) return;
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Memproses...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth.php?action=login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Login berhasil! Mengalihkan...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 800);
+                } else {
+                    showNotification(data.message || 'Username atau password salah', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            } catch (error) {
+                showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    </script>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</body>
+
+</html>

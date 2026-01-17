@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kelola Pendaftaran - Sistem Pendaftaran Event">
+    <title>Kelola Pendaftaran - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event System</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Menu rendered by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Admin</div>
+                        <div class="user-role" id="userRole">Administrator</div>
+                    </div>
+                </div>
+
+                <button class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                <button class="btn btn-danger" style="width: 100%;" onclick="utils.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-user-check"></i>
+                        <span>Kelola Pendaftaran</span>
+                    </h1>
+                    <div class="header-actions">
+                        <span id="pendingCount" class="badge badge-warning"
+                            style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            0 Pending
+                        </span>
+                    </div>
+                </header>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid mb-4"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="stat-card warning">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-label">Menunggu</div>
+                        <div class="stat-value" id="statPending">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon"><i class="fas fa-check"></i></div>
+                        <div class="stat-label">Disetujui</div>
+                        <div class="stat-value" id="statApproved">0</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-icon"><i class="fas fa-times"></i></div>
+                        <div class="stat-label">Dibatalkan</div>
+                        <div class="stat-value" id="statCancelled">0</div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-row">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select id="statusFilter" class="form-control">
+                                <option value="">Semua Status</option>
+                                <option value="pending" selected>Menunggu Approval</option>
+                                <option value="approved">Disetujui</option>
+                                <option value="cancelled">Dibatalkan</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <input type="text" id="searchInput" class="form-control"
+                                placeholder="Cari user atau event...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registrations List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Daftar Pendaftaran</h2>
+                    </div>
+                    <div id="registrationsContainer">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Memuat data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script>
+        // API_BASE_URL sudah didefinisikan di utils.js
+        let allRegistrations = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth
+            const user = await utils.checkAuth();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check if admin
+            if (user.role !== 'admin') {
+                utils.showNotification('Akses ditolak. Hanya admin yang dapat mengakses halaman ini.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+                return;
+            }
+
+            // Update user info
+            document.getElementById('userName').textContent = user.fullname || user.username;
+            document.getElementById('userRole').textContent = 'Administrator';
+            document.getElementById('userAvatar').textContent = (user.fullname || user.username).charAt(0).toUpperCase();
+
+            // PENTING: Show/hide menu based on role SEBELUM initSidebar
+            const isAdmin = true; // Already checked above
+            
+            // Initialize sidebar and dark mode SETELAH menu di-set
+            utils.initDarkMode();
+            utils.initSidebar();
+
+            // Load registrations
+            loadRegistrations();
+
+            // Add filter listeners
+            document.getElementById('statusFilter').addEventListener('change', filterRegistrations);
+            document.getElementById('searchInput').addEventListener('input', filterRegistrations);
+        });
+
+        // Load all registrations (admin)
+        async function loadRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations.php?all=true`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    allRegistrations = data.data;
+                    updateStats();
+                    filterRegistrations();
+                } else {
+                    showError('Gagal memuat data pendaftaran');
+                }
+            } catch (error) {
+                console.error('Error loading registrations:', error);
+                showError('Gagal terhubung ke server');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const pending = allRegistrations.filter(r => r.status === 'pending').length;
+            const approved = allRegistrations.filter(r => r.status === 'approved').length;
+            const cancelled = allRegistrations.filter(r => r.status === 'cancelled').length;
+
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statCancelled').textContent = cancelled;
+            document.getElementById('pendingCount').textContent = `${pending} Pending`;
+        }
+
+        // Filter registrations
+        function filterRegistrations() {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allRegistrations;
+
+            if (status) {
+                filtered = filtered.filter(r => r.status === status);
+            }
+
+            if (search) {
+                filtered = filtered.filter(r =>
+                    r.event_title.toLowerCase().includes(search) ||
+                    r.fullname.toLowerCase().includes(search) ||
+                    r.username.toLowerCase().includes(search) ||
+                    r.email.toLowerCase().includes(search)
+                );
+            }
+
+            renderRegistrations(filtered);
+        }
+
+        // Render registrations
+        function renderRegistrations(registrations) {
+            const container = document.getElementById('registrationsContainer');
+
+            if (registrations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-check"></i>
+                        <h3>Tidak Ada Pendaftaran</h3>
+                        <p>Tidak ada pendaftaran yang sesuai dengan filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Peserta</th>
+                                <th>Event</th>
+                                <th>Tanggal Event</th>
+                                <th>Biaya</th>
+                                <th>Terdaftar</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${registrations.map(r => `
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>${r.fullname}</strong>
+                                            <div class="text-secondary" style="font-size: 0.8rem;">@${r.username}</div>
+                                            <div class="text-secondary" style="font-size: 0.75rem;">${r.email}</div>
+                                        </div>
+                                    </td>
+                                    <td><strong>${r.event_title}</strong></td>
+                                    <td>${utils.formatDate(r.event_date)}</td>
+                                    <td>${utils.formatCurrency(r.fee)}</td>
+                                    <td>${utils.formatDateTime(r.registration_date)}</td>
+                                    <td>${getStatusBadge(r.status)}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            ${r.status === 'pending' ? `
+                                                <button class="btn btn-success btn-sm" onclick="updateStatus(${r.id}, 'approved')" title="Setujui">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="updateStatus(${r.id}, 'cancelled')" title="Tolak">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            ` : r.status === 'approved' ? `
+                                                <button class="btn btn-danger btn-sm" onclick="updateStatus(${r.id}, 'cancelled')" title="Batalkan">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            ` : `
+                                                <button class="btn btn-success btn-sm" onclick="updateStatus(${r.id}, 'approved')" title="Setujui Kembali">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            `}
+                                            <a href="detail.html?id=${r.event_id}" class="btn btn-secondary btn-sm" title="Lihat Event">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Get status badge
+        function getStatusBadge(status) {
+            const badges = {
+                'pending': '<span class="badge badge-warning">Menunggu</span>',
+                'approved': '<span class="badge badge-success">Disetujui</span>',
+                'cancelled': '<span class="badge badge-danger">Ditolak</span>'
+            };
+            return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+        }
+
+        // Update registration status
+        async function updateStatus(id, newStatus) {
+            const statusText = newStatus === 'approved' ? 'menyetujui' : 'menolak';
+
+            if (!confirm(`Yakin ingin ${statusText} pendaftaran ini?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations.php`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ id, status: newStatus })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const message = newStatus === 'approved' ? 'Pendaftaran disetujui' : 'Pendaftaran ditolak';
+                    utils.showNotification(message, 'success');
+                    loadRegistrations();
+                } else {
+                    utils.showNotification(data.message || 'Gagal mengubah status', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                utils.showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            const container = document.getElementById('registrationsContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Terjadi Kesalahan</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="loadRegistrations()">
+                        <i class="fas fa-redo"></i> Coba Lagi
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>

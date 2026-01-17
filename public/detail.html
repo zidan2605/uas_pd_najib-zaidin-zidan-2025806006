@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detail Event - Sistem Pendaftaran Event">
+    <title>Detail Event - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .detail-item {
+            padding: var(--spacing-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .detail-value {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .description-box {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .description-box h3 {
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event System</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Menu rendered by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole">Loading...</div>
+                    </div>
+                </div>
+
+                <button class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                <button class="btn btn-danger" style="width: 100%;" onclick="utils.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="eventTitle">Loading...</span>
+                    </h1>
+                    <div class="header-actions">
+                        <a href="list.html" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Kembali</span>
+                        </a>
+                        <button id="editBtn" class="btn btn-primary btn-sm admin-menu" onclick="editEvent()"
+                            style="display: none;">
+                            <i class="fas fa-edit"></i>
+                            <span>Edit</span>
+                        </button>
+                        <button id="registerBtn" class="btn btn-success btn-sm" onclick="registerEvent()"
+                            style="display: none;">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Daftar Event</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Event Details Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Informasi Event
+                        </h2>
+                        <span id="eventStatus"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar"></i>
+                                    Tanggal
+                                </div>
+                                <div class="detail-value" id="eventDate">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-clock"></i>
+                                    Waktu
+                                </div>
+                                <div class="detail-value" id="eventTime">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Lokasi
+                                </div>
+                                <div class="detail-value" id="eventLocation">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-rupiah-sign"></i>
+                                    Biaya
+                                </div>
+                                <div class="detail-value" id="eventFee">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-users"></i>
+                                    K uota
+                                </div>
+                                <div class="detail-value" id="eventQuota">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-user-check"></i>
+                                    Terdaftar
+                                </div>
+                                <div class="detail-value" id="registeredCount">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-ticket-alt"></i>
+                                    Slot Tersedia
+                                </div>
+                                <div class="detail-value" id="availableSlots">-</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-user"></i>
+                                    Pembuat
+                                </div>
+                                <div class="detail-value" id="creatorName">-</div>
+                            </div>
+                        </div>
+
+                        <div class="description-box">
+                            <h3>
+                                <i class="fas fa-align-left"></i>
+                                Deskripsi
+                            </h3>
+                            <p id="eventDescription">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registrations List (Admin Only) -->
+                <div class="card admin-menu" id="registrationsList" style="display: none;">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-users"></i>
+                            Daftar Peserta
+                        </h2>
+                        <span class="badge badge-secondary" id="registrationCount">0 peserta</span>
+                    </div>
+                    <div class="table-container" id="registrationsContainer">
+                        <p class="text-center text-muted" style="padding: 2rem;">Memuat data...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        // API_BASE_URL sudah didefinisikan di utils.js
+        let currentEvent = null;
+        let currentUser = null;
+        const eventId = new URLSearchParams(window.location.search).get('id');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!eventId) {
+                utils.showNotification('ID event tidak valid', 'error');
+                setTimeout(() => window.location.href = 'list.html', 1500);
+                return;
+            }
+
+            try {
+                currentUser = await utils.checkAuth();
+                if (!currentUser) return;
+
+                // Update user info
+                document.getElementById('userName').textContent = currentUser.fullname || currentUser.username;
+                document.getElementById('userAvatar').textContent = (currentUser.fullname || currentUser.username).charAt(0).toUpperCase();
+
+                const isAdmin = currentUser.role === 'admin';
+                document.getElementById('userRole').textContent = isAdmin ? 'Administrator' : 'Peserta';
+
+                // Show/hide menu based on role - PENTING: Set dulu sebelum init
+                // Admin menu handled by renderSidebarMenu, but elements with .admin-menu in content area need handling
+                document.querySelectorAll('.admin-menu:not(.nav-link)').forEach(el => {
+                    el.style.display = isAdmin ? (el.tagName === 'A' ? 'flex' : 'block') : 'none';
+                });
+                document.querySelectorAll('.user-menu:not(.nav-link)').forEach(el => {
+                    el.style.display = isAdmin ? 'none' : 'flex';
+                });
+
+                // Initialize utils SETELAH menu di-set
+                utils.initDarkMode();
+                utils.initSidebar();
+
+                // Load event details
+                await loadEventDetails();
+
+                // Load registrations if admin
+                if (isAdmin) {
+                    loadRegistrations();
+                }
+
+            } catch (error) {
+                console.error('Init error:', error);
+            }
+        });
+
+        // Load event details
+        async function loadEventDetails() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/events.php?id=${eventId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success) {
+                    currentEvent = data.data;
+                    displayEventDetails(currentEvent);
+                } else {
+                    utils.showNotification('Gagal memuat detail event', 'error');
+                    setTimeout(() => window.location.href = 'list.html', 1500);
+                }
+            } catch (error) {
+                console.error('Error loading event:', error);
+                utils.showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+
+        // Display event details
+        function displayEventDetails(event) {
+            document.getElementById('eventTitle').textContent = event.title;
+            document.getElementById('eventDate').textContent = utils.formatDate(event.event_date);
+            document.getElementById('eventTime').textContent = event.event_time || '-';
+            document.getElementById('eventLocation').textContent = event.location;
+            document.getElementById('eventFee').textContent = utils.formatCurrency(event.fee);
+            document.getElementById('eventQuota').textContent = event.quota;
+            document.getElementById('registeredCount').textContent = event.registered_count || 0;
+            document.getElementById('availableSlots').textContent = event.quota - (event.registered_count || 0);
+            document.getElementById('creatorName').textContent = event.creator_name || '-';
+            document.getElementById('eventDescription').textContent = event.description || 'Tidak ada deskripsi';
+
+            // Status badge
+            const statusBadge = getStatusBadge(event.status);
+            document.getElementById('eventStatus').innerHTML = statusBadge;
+
+            // Show/hide action buttons
+            const isAdmin = currentUser?.role === 'admin';
+            const availableSlots = event.quota - (event.registered_count || 0);
+            const canRegister = event.status === 'open' && availableSlots > 0 && !isAdmin;
+
+            document.getElementById('editBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+            document.getElementById('registerBtn').style.display = canRegister ? 'inline-flex' : 'none';
+        }
+
+        // Load registrations (admin only)
+        async function loadRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations.php?event_id=${eventId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayRegistrations(data.data);
+                }
+            } catch (error) {
+                console.error('Error loading registrations:', error);
+            }
+        }
+
+        // Display registrations
+        function displayRegistrations(registrations) {
+            const container = document.getElementById('registrationsContainer');
+            document.getElementById('registrationCount').textContent = `${registrations.length} peserta`;
+
+            if (registrations.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted" style="padding: 2rem;">Belum ada peserta terdaftar</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Terdaftar</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${registrations.map(reg => `
+                            <tr>
+                                <td><strong>${reg.fullname}</strong></td>
+                                <td>${reg.email}</td>
+                                <td>${utils.formatDateTime(reg.registration_date)}</td>
+                                <td>${getStatusBadge(reg.status)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Get status badge
+        function getStatusBadge(status) {
+            const badges = {
+                'open': '<span class="badge badge-success">Open</span>',
+                'closed': '<span class="badge badge-danger">Closed</span>',
+                'cancelled': '<span class="badge badge-warning">Cancelled</span>',
+                'pending': '<span class="badge badge-warning">Pending</span>',
+                'approved': '<span class="badge badge-success">Approved</span>'
+            };
+            return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+        }
+
+        // Edit event
+        function editEvent() {
+            window.location.href = `form.html?id=${eventId}`;
+        }
+
+        // Register event
+        async function registerEvent() {
+            if (!confirm(`Daftar ke event "${currentEvent.title}"?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ event_id: eventId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    utils.showNotification('Pendaftaran berhasil!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    utils.showNotification(data.message || 'Gagal mendaftar', 'error');
+                }
+            } catch (error) {
+                console.error('Error registering:', error);
+                utils.showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

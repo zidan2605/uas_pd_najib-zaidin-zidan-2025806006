@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard - Sistem Pendaftaran Event">
+    <title>Dashboard - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Dashboard specific styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            transition: box-shadow var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card.primary .stat-icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-card.success .stat-icon {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-card.warning .stat-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-card.info .stat-icon {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info-color);
+        }
+
+        .stat-card.danger .stat-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .stat-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .stat-change {
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--spacing-xl);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .table td {
+            font-size: var(--font-size-sm);
+        }
+
+        .empty-table {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-table i {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+
+        .admin-actions {
+            display: none;
+        }
+
+        .admin-actions.visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event System</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Menu rendered by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole">Loading...</div>
+                    </div>
+                </div>
+
+                <button class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                <button class="btn btn-danger" style="width: 100%;" onclick="utils.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <div>
+                        <h1 class="page-title">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </h1>
+                        <div class="welcome-message text-secondary mt-1" id="welcomeMessage">Selamat datang kembali!</div>
+                    </div>
+                    <div class="header-actions admin-actions" id="adminActions">
+                        <a href="form.html" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Event</span>
+                        </a>
+                    </div>
+                </header>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card primary">
+                        <div class="stat-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Memuat data...</div>
+                            <div class="stat-value">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Event Populer -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-fire"></i>
+                                Event Populer
+                            </h2>
+                            <a href="list.html" class="btn btn-secondary btn-sm">Lihat Semua</a>
+                        </div>
+                        <div class="table-container" id="popularEventsContainer">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Tanggal</th>
+                                        <th>Pendaftar</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="popularEventsBody">
+                                    <tr>
+                                        <td colspan="5" class="empty-table">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <p>Memuat data...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Event Terbaru -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-clock"></i>
+                                Event Terbaru
+                            </h2>
+                            <a href="list.html" class="btn btn-secondary btn-sm">Lihat Semua</a>
+                        </div>
+                        <div class="table-container" id="recentEventsContainer">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Tanggal</th>
+                                        <th>Biaya</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentEventsBody">
+                                    <tr>
+                                        <td colspan="5" class="empty-table">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <p>Memuat data...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        // API_BASE_URL sudah didefinisikan di utils.js
+        let currentUser = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                currentUser = await utils.checkAuth();
+                if (!currentUser) return;
+
+                // Update user info
+                document.getElementById('userName').textContent = currentUser.fullname || currentUser.username;
+                document.getElementById('userAvatar').textContent = (currentUser.fullname || currentUser.username).charAt(0).toUpperCase();
+                
+                // Update welcome message
+                const welcomeMsg = document.getElementById('welcomeMessage');
+                if (welcomeMsg) {
+                    welcomeMsg.textContent = `Selamat datang, ${currentUser.fullname || currentUser.username}!`;
+                }
+
+                const isAdmin = currentUser.role === 'admin';
+                document.getElementById('userRole').textContent = isAdmin ? 'Administrator' : 'Peserta';
+
+                // PENTING: Show/hide menu based on role SEBELUM initSidebar
+                if (isAdmin) document.getElementById('adminActions').classList.add('visible');
+
+                // Initialize utils SETELAH menu di-set
+                utils.initDarkMode();
+                utils.initSidebar();
+
+                // Load data
+                loadStatistics();
+                loadPopularEvents();
+                loadRecentEvents();
+
+            } catch (error) {
+                console.error('Init error:', error);
+            }
+        });
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/dashboard.php?action=stats`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.data;
+                    const isAdmin = currentUser?.role === 'admin';
+
+                    let html = `
+                        <div class="stat-card primary">
+                            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Event</div>
+                                <div class="stat-value">${stats.total_events}</div>
+                                <div class="stat-change">Semua event</div>
+                            </div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Event Aktif</div>
+                                <div class="stat-value">${stats.active_events}</div>
+                                <div class="stat-change">Status open</div>
+                            </div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">${isAdmin ? 'Total Pendaftar' : 'Pendaftaran Saya'}</div>
+                                <div class="stat-value">${isAdmin ? stats.total_registrations : stats.my_registrations}</div>
+                                <div class="stat-change">${isAdmin ? 'Semua event' : 'Event terdaftar'}</div>
+                            </div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-icon"><i class="fas fa-rupiah-sign"></i></div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Pendapatan</div>
+                                <div class="stat-value" style="font-size: 1.25rem;">${formatCurrency(stats.total_revenue)}</div>
+                                <div class="stat-change">Estimasi</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add pending for admin
+                    if (isAdmin && stats.pending_registrations > 0) {
+                        html += `
+                            <div class="stat-card danger">
+                                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Pending Approval</div>
+                                    <div class="stat-value">${stats.pending_registrations}</div>
+                                    <div class="stat-change"><a href="admin-registrations.html">Kelola →</a></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    document.getElementById('statsGrid').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Error</div>
+                            <div class="stat-value">-</div>
+                            <div class="stat-change">Gagal memuat statistik</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load popular events
+        async function loadPopularEvents() {
+            const tbody = document.getElementById('popularEventsBody');
+            try {
+                const response = await fetch(`${API_BASE_URL}/dashboard.php?action=popular&limit=5`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(event => `
+                        <tr>
+                            <td><strong>${event.title}</strong></td>
+                            <td>${formatDate(event.event_date)}</td>
+                            <td>${event.registered_count}/${event.quota}</td>
+                            <td>${getStatusBadge(event.status)}</td>
+                            <td>
+                                <a href="detail.html?id=${event.id}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr><td colspan="5" class="empty-table">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>Belum ada event</p>
+                        </td></tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading popular events:', error);
+                tbody.innerHTML = `
+                    <tr><td colspan="5" class="empty-table">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Gagal memuat data</p>
+                    </td></tr>
+                `;
+            }
+        }
+
+        // Load recent events
+        async function loadRecentEvents() {
+            const tbody = document.getElementById('recentEventsBody');
+            try {
+                const response = await fetch(`${API_BASE_URL}/dashboard.php?action=recent&limit=5`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(event => `
+                        <tr>
+                            <td><strong>${event.title}</strong></td>
+                            <td>${formatDate(event.event_date)}</td>
+                            <td>${formatCurrency(event.fee)}</td>
+                            <td>${getStatusBadge(event.status)}</td>
+                            <td>
+                                <a href="detail.html?id=${event.id}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `
+                        <tr><td colspan="5" class="empty-table">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>Belum ada event</p>
+                        </td></tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading recent events:', error);
+                tbody.innerHTML = `
+                    <tr><td colspan="5" class="empty-table">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Gagal memuat data</p>
+                    </td></tr>
+                `;
+            }
+        }
+
+        // Helper functions
+        function formatCurrency(amount) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount || 0);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('id-ID', options);
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'open': '<span class="badge badge-success">Open</span>',
+                'closed': '<span class="badge badge-danger">Closed</span>',
+                'cancelled': '<span class="badge badge-warning">Cancelled</span>'
+            };
+            return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+        }
+    </script>
+</body>
+
+</html>

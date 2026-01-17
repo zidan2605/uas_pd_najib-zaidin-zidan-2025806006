@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Daftar Event - Sistem Pendaftaran Event">
+    <title>Daftar Event - Event Registration System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .filter-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .filter-bar .form-group {
+            margin: 0;
+        }
+
+        .filter-bar .form-control {
+            min-width: 150px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+        }
+
+        .table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .table td {
+            font-size: var(--font-size-sm);
+        }
+
+        .empty-table {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-table i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.visible {
+            display: inline-flex;
+        }
+
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar .form-control {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Event System</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Menu rendered by JS -->
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-role" id="userRole">Loading...</div>
+                    </div>
+                </div>
+
+                <button class="dark-mode-toggle" id="darkModeToggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                <button class="btn btn-danger" style="width: 100%;" onclick="utils.logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <header class="page-header">
+                    <h1 class="page-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Daftar Event</span>
+                    </h1>
+                    <div class="header-actions admin-only" id="adminActions">
+                        <a href="form.html" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Event</span>
+                        </a>
+                    </div>
+                </header>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="form-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Cari event...">
+                    </div>
+                    <div class="form-group">
+                        <select id="statusFilter" class="form-control">
+                            <option value="">Semua Status</option>
+                            <option value="open">Open</option>
+                            <option value="closed">Closed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="sortBy" class="form-control">
+                            <option value="event_date">Tanggal Event</option>
+                            <option value="title">Nama Event</option>
+                            <option value="fee">Biaya</option>
+                            <option value="registered_count">Pendaftar</option>
+                            <option value="created_at">Terbaru</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Events Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Semua Event</h2>
+                        <span class="badge badge-secondary" id="eventCount">0 event</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="table" id="eventsTable">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Tanggal</th>
+                                    <th>Lokasi</th>
+                                    <th>Biaya</th>
+                                    <th>Pendaftar</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsBody">
+                                <tr>
+                                    <td colspan="7" class="empty-table">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Memuat data...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+        // API_BASE_URL sudah didefinisikan di utils.js
+        let currentUser = null;
+        let allEvents = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                currentUser = await utils.checkAuth();
+                if (!currentUser) return;
+
+                // Update user info
+                document.getElementById('userName').textContent = currentUser.fullname || currentUser.username;
+                document.getElementById('userAvatar').textContent = (currentUser.fullname || currentUser.username).charAt(0).toUpperCase();
+
+                const isAdmin = currentUser.role === 'admin';
+                document.getElementById('userRole').textContent = isAdmin ? 'Administrator' : 'Peserta';
+
+                // PENTING: Show/hide menu based on role SEBELUM initSidebar
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    if (isAdmin) el.classList.add('visible');
+                });
+
+                // Initialize utils SETELAH menu di-set
+                utils.initDarkMode();
+                utils.initSidebar();
+
+                // Load events
+                loadEvents();
+
+                // Setup filters
+                document.getElementById('searchInput').addEventListener('input', filterEvents);
+                document.getElementById('statusFilter').addEventListener('change', filterEvents);
+                document.getElementById('sortBy').addEventListener('change', filterEvents);
+
+            } catch (error) {
+                console.error('Init error:', error);
+            }
+        });
+
+        // Load events
+        async function loadEvents() {
+            const tbody = document.getElementById('eventsBody');
+            try {
+                const response = await fetch(`${API_BASE_URL}/events.php`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success) {
+                    allEvents = data.data;
+                    filterEvents();
+                } else {
+                    showError('Gagal memuat data event');
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                showError('Gagal terhubung ke server');
+            }
+        }
+
+        // Filter and render events
+        function filterEvents() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = allEvents.filter(e => {
+                const matchSearch = e.title.toLowerCase().includes(search) ||
+                    e.location.toLowerCase().includes(search) ||
+                    (e.description && e.description.toLowerCase().includes(search));
+                const matchStatus = !status || e.status === status;
+                return matchSearch && matchStatus;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'title': return a.title.localeCompare(b.title);
+                    case 'fee': return b.fee - a.fee;
+                    case 'registered_count': return b.registered_count - a.registered_count;
+                    case 'created_at': return new Date(b.created_at) - new Date(a.created_at);
+                    default: return new Date(a.event_date) - new Date(b.event_date);
+                }
+            });
+
+            renderEvents(filtered);
+        }
+
+        // Render events table
+        function renderEvents(events) {
+            const tbody = document.getElementById('eventsBody');
+            document.getElementById('eventCount').textContent = `${events.length} event`;
+
+            if (events.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7" class="empty-table">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Tidak ada event yang sesuai filter</p>
+                    </td></tr>
+                `;
+                return;
+            }
+
+            const isAdmin = currentUser?.role === 'admin';
+
+            tbody.innerHTML = events.map(event => `
+                <tr>
+                    <td><strong>${event.title}</strong></td>
+                    <td>${formatDate(event.event_date)}</td>
+                    <td>${event.location}</td>
+                    <td>${formatCurrency(event.fee)}</td>
+                    <td>${event.registered_count}/${event.quota}</td>
+                    <td>${getStatusBadge(event.status)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="detail.html?id=${event.id}" class="btn btn-secondary btn-sm" title="Lihat">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            ${isAdmin ? `
+                                <a href="form.html?id=${event.id}" class="btn btn-primary btn-sm" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-danger btn-sm" onclick="deleteEvent(${event.id}, '${event.title}')" title="Hapus">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Delete event
+        async function deleteEvent(id, title) {
+            if (!confirm(`Hapus event "${title}"?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/events.php?id=${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    utils.showNotification('Event berhasil dihapus', 'success');
+                    loadEvents();
+                } else {
+                    utils.showNotification(data.message || 'Gagal menghapus event', 'error');
+                }
+            } catch (error) {
+                utils.showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('eventsBody').innerHTML = `
+                <tr><td colspan="7" class="empty-table">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="loadEvents()">
+                        <i class="fas fa-redo"></i> Coba Lagi
+                    </button>
+                </td></tr>
+            `;
+        }
+
+        // Helper functions
+        function formatCurrency(amount) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount || 0);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('id-ID', options);
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'open': '<span class="badge badge-success">Open</span>',
+                'closed': '<span class="badge badge-danger">Closed</span>',
+                'cancelled': '<span class="badge badge-warning">Cancelled</span>'
+            };
+            return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
+        }
+    </script>
+</body>
+
+</html>
