@@ -249,8 +249,8 @@ Lihat dokumentasi lengkap di `docs/debugging.md`
 
 ## 👨‍💻 Developer
 
-- **Nama**: [Your Name]
-- **NIM**: [Your NIM]
+- **Nama**: [NAJIB ZAIDIN ZIDAN]
+- **NIM**: [2025806006]
 - **Mata Kuliah**: Pemrograman Web / UAS
 
 ## 📝 License
